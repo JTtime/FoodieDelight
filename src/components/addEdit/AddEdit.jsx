@@ -54,7 +54,6 @@ function AddEdit() {
         console.log('mockData', mockData)
         setSubmitting(false);
         toast.success('Restaurant added successfully!');
-        // Here you would typically send data to your backend
     };
 
     useEffect(() => {
