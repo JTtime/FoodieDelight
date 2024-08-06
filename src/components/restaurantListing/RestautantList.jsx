@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardMedia, Typography, Grid, Pagination, Box, IconButton, Button } from '@mui/material';
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import restaurantData from '../../MOCK_DATA.json';
+
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import { encryptData } from '../../utilities/services';
 
 
 function RestautantList() {
     const [restaurants, setRestaurants] = useState([]);
     const [page, setPage] = useState(1);
     const [restaurantsPerPage] = useState(12);
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         setRestaurants(restaurantData)
@@ -20,6 +24,12 @@ function RestautantList() {
     const indexOfFirstRestaurant = indexOfLastRestaurant - restaurantsPerPage;
     const currentRestaurants = restaurants.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
     const paginate = (pageNumber) => setPage(pageNumber);
+
+    const handleEdit = (restaurantId) => {
+        const dataid = encryptData(restaurantId)
+        console.log('restaurantId', restaurantId)
+        navigate(`/edit/${encodeURIComponent(dataid)}`);
+      };
 
 
     return (
@@ -45,7 +55,7 @@ function RestautantList() {
                                     {restaurant.description}
                                 </Typography>
                             </CardContent>
-                            <IconButton aria-label="edit" component={Link} to={`/edit/${restaurant.id}`}>
+                            <IconButton aria-label="edit" onClick={() => handleEdit({name: restaurant.restaurant_name, id: restaurant.id, desc: restaurant.description})}>
                                 <EditIcon />
                             </IconButton>
                         </Card>
