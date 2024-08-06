@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardMedia, Typography, Grid, Pagination, Box } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Grid, Pagination, Box, IconButton, Button } from '@mui/material';
+import { Link } from "react-router-dom";
 import restaurantData from '../../MOCK_DATA.json';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+
 
 function RestautantList() {
     const [restaurants, setRestaurants] = useState([]);
@@ -20,6 +24,9 @@ function RestautantList() {
 
     return (
         <div>
+            <Button variant="contained" startIcon={<AddIcon />}>
+                Add Restaurant
+            </Button>
             <Grid container spacing={3}>
                 {currentRestaurants.map((restaurant) => (
                     <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
@@ -38,17 +45,20 @@ function RestautantList() {
                                     {restaurant.description}
                                 </Typography>
                             </CardContent>
+                            <IconButton aria-label="edit" component={Link} to={`/edit/${restaurant.id}`}>
+                                <EditIcon />
+                            </IconButton>
                         </Card>
 
                     </Grid>
                 ))}
             </Grid>
-            <Box sx={{display: 'flex', justifyContent: 'center', margin: '1rem', padding: '1rem', border: '2px solid black'}}>
-            <Pagination
-                count={Math.ceil(restaurants.length / restaurantsPerPage)}
-                page={page}
-                onChange={(event, value) => paginate(value)}
-            />
+            <Box sx={{ display: 'flex', justifyContent: 'center', margin: '1rem', padding: '1rem', border: '2px solid black' }}>
+                <Pagination
+                    count={Math.ceil(restaurants.length / restaurantsPerPage)}
+                    page={page}
+                    onChange={(event, value) => paginate(value)}
+                />
             </Box>
         </div>
     )
