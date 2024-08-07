@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardMedia, Typography, Grid, Pagination, Box, IconButton, Button, Divider } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { encryptData } from '../../utilities/services';
 import { RestaurantAdminService } from '../../services/apiCalls';
@@ -23,7 +25,7 @@ function RestaurantList() {
     // console.log('restaurant', restaurantData)
     // const {isLoading, isSuccess, data, isError, error, refetch} = RestaurantAdminService.getAllRestaurants();
     const fetchData = async () => {
-        let {responseData, responseCount} = await RestaurantAdminService.getAllRestaurants({page, limit: restaurantsPerPage});
+        let { responseData, responseCount } = await RestaurantAdminService.getAllRestaurants({ page, limit: restaurantsPerPage });
         if (responseData.status === 200) {
             setRestaurants(responseData?.data)
             setTotalCount(responseCount?.data?.length)
@@ -31,33 +33,42 @@ function RestaurantList() {
         console.log('response', responseCount?.data?.length)
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchData();
         console.log('restaurant', restaurants)
-    },[page])
+    }, [page])
 
     const indexOfLastRestaurant = page * restaurantsPerPage;
     const indexOfFirstRestaurant = indexOfLastRestaurant - restaurantsPerPage;
 
 
-    useEffect(()=>{
+    useEffect(() => {
 
         const restaurantData = restaurants?.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
         setCurrentRestaurants([...restaurantData]);
-    },[restaurants])
+    }, [restaurants])
 
-    
+
     // const currentRestaurants = restaurants.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
     const paginate = (pageNumber) => {
-        console.log('pageNumber',pageNumber)
+        console.log('pageNumber', pageNumber)
         setPage(pageNumber);
     }
 
-    const handleEdit = (restaurantId) => {
-        const dataid = encryptData(restaurantId)
-        console.log('restaurantId', restaurantId)
+    const handleEdit = (restaurantData) => {
+        const dataid = encryptData(restaurantData)
+        console.log('restaurantData', restaurantData)
         navigate(`/edit/${encodeURIComponent(dataid)}`);
     };
+
+    const handleDelete = async (restauantId) => {
+        console.log('restauantId', restauantId)
+        const response = await RestaurantAdminService.deleteRestaurant(restauantId);
+        if (response.status === 200) {
+            toast.success("Restaurant Deleted successfully!");
+            fetchData();
+        }
+    }
 
 
     return (
@@ -131,6 +142,10 @@ function RestaurantList() {
                                             })}>
                                         <EditIcon />
                                     </IconButton>
+                                    <IconButton aria-label="delete"
+                                        onClick={() => handleDelete(restaurant?.id)}>
+                                        <DeleteIcon />
+                                    </IconButton>
 
                                 </Box>
 
@@ -150,6 +165,7 @@ function RestaurantList() {
                     onChange={(event, value) => paginate(value)}
                 />
             </Box>
+            <ToastContainer />
         </div>
     )
 }

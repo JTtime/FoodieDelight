@@ -49,4 +49,16 @@ export class RestaurantAdminService {
 
     return responseData;
   }
+
+  public static async deleteRestaurant(payload) {
+    const apiURI = `${this.baseURL}/${payload}`;
+
+    let responseData = await axios.delete(apiURI);
+
+    console.log('responseData', responseData)
+
+    return responseData;
+  }
+
+
 }
