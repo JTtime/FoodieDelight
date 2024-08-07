@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardMedia, Typography, Grid, Pagination, Box, IconButton, Button, Divider } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -16,6 +17,7 @@ function RestaurantList() {
     const [page, setPage] = useState(1);
     const [currentRestaurants, setCurrentRestaurants] = useState([])
     const [restaurantsPerPage] = useState(9);
+    const [loading, setLoading] = useState(false)
     const navigate = useNavigate();
 
 
@@ -29,13 +31,16 @@ function RestaurantList() {
         if (responseData.status === 200) {
             setRestaurants(responseData?.data)
             setTotalCount(responseCount?.data?.length)
+            setLoading(false)
         }
         console.log('response', responseCount?.data?.length)
     }
 
     useEffect(() => {
+        setLoading(true)
         fetchData();
         console.log('restaurant', restaurants)
+
     }, [page])
 
     const indexOfLastRestaurant = page * restaurantsPerPage;
@@ -92,10 +97,17 @@ function RestaurantList() {
             <Divider sx={{ marginY: '1rem' }} />
 
             <Grid container spacing={3}>
-                {restaurants?.map((restaurant) => (
-                    <Grid item xs={12} sm={6} md={4} key={restaurant?.id}>
-                        <Card sx={{ height: '100%' }}>
-                            {/* <Box sx={{ height: 'auto' }}>
+                {loading ?
+                    <Box style={{ display: 'flex', margin: '2rem', justifyContent: 'center', alignItems: 'center' }}>
+                        <Box>
+                            <CircularProgress color="secondary" />
+                        </Box>
+
+                    </Box>
+                    : restaurants?.map((restaurant) => (
+                        <Grid item xs={12} sm={6} md={4} key={restaurant?.id}>
+                            <Card sx={{ height: '100%' }}>
+                                {/* <Box sx={{ height: 'auto' }}>
                                 <CardMedia
                                     component="img"
                                     height="140"
@@ -103,60 +115,60 @@ function RestaurantList() {
                                     alt={restaurant.restaurant_name}
                                 />
                             </Box> */}
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Box sx={{ flexGrow: 1 }}>
-                                    <CardContent sx={{ flexGrow: 1, height: '100%' }}>
-                                        <Typography gutterBottom variant="h5" component="div">
-                                            {restaurant?.restaurant_name}
-                                        </Typography>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <Box sx={{ flexGrow: 1 }}>
+                                        <CardContent sx={{ flexGrow: 1, height: '100%' }}>
+                                            <Typography gutterBottom variant="h5" component="div">
+                                                {restaurant?.restaurant_name}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {restaurant?.description}
+                                            </Typography>
+                                        </CardContent>
+
+                                    </Box>
+                                    <Box>
                                         <Typography variant="body2" color="text.secondary">
-                                            {restaurant?.description}
+                                            Contact Number: {restaurant?.phone}
                                         </Typography>
-                                    </CardContent>
 
-                                </Box>
-                                <Box>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Contact Number: {restaurant?.phone}
-                                    </Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Email ID: {restaurant?.email}
+                                        </Typography>
 
-                                </Box>
-                                <Box>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Email ID: {restaurant?.email}
-                                    </Typography>
+                                    </Box>
 
-                                </Box>
+                                    <Box >
+                                        <IconButton aria-label="edit"
+                                            onClick={() => handleEdit(
+                                                {
+                                                    name: restaurant.restaurant_name,
+                                                    id: restaurant.id,
+                                                    desc: restaurant.description,
+                                                    phone: restaurant.phone,
+                                                    email: restaurant.email,
+                                                    // image: restaurant.image_url,
+                                                    location: restaurant.location
+                                                })}>
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton aria-label="delete"
+                                            onClick={() => handleDelete(restaurant?.id)}>
+                                            <DeleteIcon />
+                                        </IconButton>
 
-                                <Box >
-                                    <IconButton aria-label="edit"
-                                        onClick={() => handleEdit(
-                                            {
-                                                name: restaurant.restaurant_name,
-                                                id: restaurant.id,
-                                                desc: restaurant.description,
-                                                phone: restaurant.phone,
-                                                email: restaurant.email,
-                                                // image: restaurant.image_url,
-                                                location: restaurant.location
-                                            })}>
-                                        <EditIcon />
-                                    </IconButton>
-                                    <IconButton aria-label="delete"
-                                        onClick={() => handleDelete(restaurant?.id)}>
-                                        <DeleteIcon />
-                                    </IconButton>
+                                    </Box>
 
                                 </Box>
 
-                            </Box>
 
 
+                            </Card>
 
-                        </Card>
-
-                    </Grid>
-                ))}
+                        </Grid>
+                    ))}
             </Grid>
             <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', padding: '1rem', border: '2px solid black' }}>
                 <Pagination
