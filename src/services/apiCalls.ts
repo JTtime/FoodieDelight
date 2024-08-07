@@ -28,4 +28,24 @@ export class RestaurantAdminService {
 
     //   return {isLoading, isFetching, isSuccess, isError, data, error, refetch }
   }
+
+  public static async updateRestaurant(id: string) {
+    const apiURI = `${this.baseURL}/${id}`;
+
+    let responseData = await axios({
+      method: "put",
+      url: apiURI,
+    });
+
+
+    console.log('responseData', responseData)
+
+    return responseData;
+
+    //   const { isLoading, isFetching, isSuccess, isError, data, error, refetch } = useApi(
+    //     baseUrl,'GET'
+    // );
+
+    //   return {isLoading, isFetching, isSuccess, isError, data, error, refetch }
+  }
 }

@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import mockDataImport from "../../MOCK_DATA.json";
 import { decryptData } from "../../utilities/services";
+import { RestaurantAdminService } from "../../services/apiCalls";
 import {
     Box,
     Button,
@@ -28,7 +29,9 @@ const validationSchema = Yup.object().shape({
     restaurant_name: Yup.string().required("Restaurant name is required"),
     description: Yup.string().required("Description is required"),
     location: Yup.string().required("Location is required"),
-    phone: Yup.string().required('Phone number is required'),
+    phone: Yup.string()
+        .matches(/^\(?([0-9]{3})\)?[- .]?([0-9]{3})[- .]?([0-9]{4})$/, 'Invalid phone number format')
+        .required('Phone number is required'),
     email: Yup.string().email("Invalid email format")
     // image_url: Yup.mixed()
     //     .required("Image is required")
@@ -59,6 +62,9 @@ function AddEdit() {
     const [mockData, setMockData] = useState([...mockDataImport]);
 
     const handleSubmit = (values, { setSubmitting }) => {
+        if (id) {
+            updateRestaurant(id?.id)
+        }
         console.log('values', values);
         const newRestaurant = {
             id: mockData.length + 1,
@@ -68,8 +74,17 @@ function AddEdit() {
         setMockData([...mockData, newRestaurant]);
         console.log("mockData", mockData);
         setSubmitting(false);
-        toast.success("Restaurant added successfully!");
+        // toast.success("Restaurant added successfully!");
     };
+
+    const updateRestaurant = async (id) => {
+        const response = await RestaurantAdminService.updateRestaurant(id)
+        if (response.status >= 200 && response?.status <= 300) {
+            toast.success("Restaurant updated successfully!");
+            setTimeout(() => { navigate('/') }, 2000)
+        }
+
+    }
 
     useEffect(() => {
         if (id) {
