@@ -29,7 +29,7 @@ const useApi = <T,>(
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-  const [data, setData] = useState<T | null>(null);
+  const [data, setData] = useState([]);
   const [error, setError] = useState<Error | string | null>(null);
 
   const fetchData = useCallback(async () => {
