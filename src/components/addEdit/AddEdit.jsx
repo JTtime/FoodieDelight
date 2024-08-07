@@ -5,14 +5,15 @@ import * as Yup from 'yup';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import mockDataImport from '../../MOCK_DATA.json';
+import { decryptData } from '../../utilities/services';
 
-const initialValues
-    = {
-    restaurant_name: '',
-    description: '',
-    location: '',
-    image: null,
-};
+// const initialValues
+//     = {
+//     restaurant_name: '',
+//     description: '',
+//     location: '',
+//     image: null,
+// };
 
 const validationSchema = Yup.object().shape({
     restaurant_name: Yup.string().required('Restaurant name is required'),
@@ -34,13 +35,14 @@ const validationSchema = Yup.object().shape({
 
 
 function AddEdit() {
-    const navigate = useNavigate();
-    const { id } = useParams();
+    const { dataid } = useParams();
+    const id = decryptData(dataid);
+    console.log('id', id)
     const [initialValues, setInitialValues] = useState({
-        restaurant_name: '',
-        description: '',
-        location: '',
-        image: '',
+        restaurant_name: id?.name || '',
+        description: id?.desc || '',
+        location: id?.location || '',
+        image: id?.image || '',
     });
     const [mockData, setMockData] = useState([...mockDataImport]);
 
