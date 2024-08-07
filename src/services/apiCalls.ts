@@ -36,16 +36,17 @@ export class RestaurantAdminService {
       method: "put",
       url: apiURI,
     });
+    console.log('responseData', responseData)
+    return responseData;
+  }
 
+  public static async addRestaurant(payload) {
+    const apiURI = `${this.baseURL}`;
+
+    let responseData = await axios.post(apiURI, payload);
 
     console.log('responseData', responseData)
 
     return responseData;
-
-    //   const { isLoading, isFetching, isSuccess, isError, data, error, refetch } = useApi(
-    //     baseUrl,'GET'
-    // );
-
-    //   return {isLoading, isFetching, isSuccess, isError, data, error, refetch }
   }
 }
