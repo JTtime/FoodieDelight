@@ -62,9 +62,12 @@ function AddEdit() {
     const [mockData, setMockData] = useState([...mockDataImport]);
 
     const handleSubmit = (values, { setSubmitting }) => {
+        console.log('values', values);
+
         if (id) {
             updateRestaurant(id?.id)
         }
+        else addNewRestaurant(values);
         console.log('values', values);
         const newRestaurant = {
             id: mockData.length + 1,
@@ -74,7 +77,6 @@ function AddEdit() {
         setMockData([...mockData, newRestaurant]);
         console.log("mockData", mockData);
         setSubmitting(false);
-        // toast.success("Restaurant added successfully!");
     };
 
     const updateRestaurant = async (id) => {
@@ -83,8 +85,21 @@ function AddEdit() {
             toast.success("Restaurant updated successfully!");
             setTimeout(() => { navigate('/') }, 2000)
         }
-
     }
+
+    const addNewRestaurant = async (values) => {
+        try {
+            const response = await RestaurantAdminService.addRestaurant(values);
+            if (response.status >= 200 && response?.status <= 300) {
+                console.log('add new rest', response)
+                toast.success("Restaurant added successfully!");
+                setTimeout(() => { navigate('/') }, 2000);
+            }
+        } catch (err) {
+            console.error('error adding new restaurant', err)
+        }
+    }
+       
 
     useEffect(() => {
         if (id) {
