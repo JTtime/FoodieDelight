@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Listing from './components/restaurantListing/RestautantList'
+import Listing from './components/restaurantListing/RestaurantList'
 import './App.css'
 import AddEdit from './components/addEdit/AddEdit';
 
