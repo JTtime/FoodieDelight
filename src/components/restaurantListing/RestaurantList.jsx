@@ -1,185 +1,202 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardMedia, Typography, Grid, Pagination, Box, IconButton, Button, Divider } from '@mui/material';
-import CircularProgress from '@mui/material/CircularProgress';
-import { Link, useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Pagination,
+  Box,
+  IconButton,
+  Button,
+  Divider,
+  CircularProgress
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 import { encryptData } from '../../utilities/services';
 import { RestaurantAdminService } from '../../services/apiCalls';
 
 
-function RestaurantList() {
-    const [restaurants, setRestaurants] = useState([]);
-    const [totalCount, setTotalCount] = useState()
-    const [page, setPage] = useState(1);
-    const [currentRestaurants, setCurrentRestaurants] = useState([])
-    const [restaurantsPerPage] = useState(9);
-    const [loading, setLoading] = useState(false)
-    const navigate = useNavigate();
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#d32f2f',
+    },
+    background: {
+      default: '#f5f5f5',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#333333',
+      secondary: '#555555',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+          borderRadius: '8px',
+          transition: 'transform 0.3s ease',
+          '&:hover': {
+            transform: 'scale(1.02)',
+          },
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: '20px',
+        },
+      },
+    },
+    MuiPagination: {
+      styleOverrides: {
+        ul: {
+          justifyContent: 'center',
+        },
+      },
+    },
+  },
+});
+
+const RestaurantList = () => {
+  const [restaurants, setRestaurants] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [restaurantsPerPage] = useState(9);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
 
-    // useEffect(() => {
-    //     setRestaurants(restaurantData)
-    // }, [])
-    // console.log('restaurant', restaurantData)
-    // const {isLoading, isSuccess, data, isError, error, refetch} = RestaurantAdminService.getAllRestaurants();
-    const fetchData = async () => {
-        let { responseData, responseCount } = await RestaurantAdminService.getAllRestaurants({ page, limit: restaurantsPerPage });
-        if (responseData.status === 200) {
-            setRestaurants(responseData?.data)
-            setTotalCount(responseCount?.data?.length)
-            setLoading(false)
-        }
-        console.log('response', responseCount?.data?.length)
+  const fetchRestaurants = async () => {
+    setLoading(true);
+    try {
+      const { responseData, responseCount } = await RestaurantAdminService.getAllRestaurants({
+        page,
+        limit: restaurantsPerPage
+      });
+      if (responseData.status === 200) {
+        setRestaurants(responseData.data);
+        setTotalCount(responseCount.data.length);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch restaurants");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    useEffect(() => {
-        setLoading(true)
-        fetchData();
-        console.log('restaurant', restaurants)
+  useEffect(() => {  
 
-    }, [page])
+    fetchRestaurants();
+  }, [page, restaurantsPerPage]);
 
-    const indexOfLastRestaurant = page * restaurantsPerPage;
-    const indexOfFirstRestaurant = indexOfLastRestaurant - restaurantsPerPage;
+  const handleEdit = (restaurantData) => {
+    const encryptedData = encryptData(restaurantData);
+    navigate(`/edit/${encodeURIComponent(encryptedData)}`);
+  };
 
-
-    useEffect(() => {
-
-        const restaurantData = restaurants?.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
-        setCurrentRestaurants([...restaurantData]);
-    }, [restaurants])
-
-
-    // const currentRestaurants = restaurants.slice(indexOfFirstRestaurant, indexOfLastRestaurant);
-    const paginate = (pageNumber) => {
-        console.log('pageNumber', pageNumber)
-        setPage(pageNumber);
+  const handleDelete = async (restaurantId) => {
+    try {
+      const response = await RestaurantAdminService.deleteRestaurant(restaurantId);
+      if (response.status === 200) {
+        toast.success("Restaurant deleted successfully!");
+        fetchRestaurants();
+        // setPage(1);
+      }
+    } catch (error) {
+      toast.error("Failed to delete restaurant");
     }
+  };
 
-    const handleEdit = (restaurantData) => {
-        const dataid = encryptData(restaurantData)
-        console.log('restaurantData', restaurantData)
-        navigate(`/edit/${encodeURIComponent(dataid)}`);
-    };
+  const paginate = (event, value) => {
+    setPage(value);
+  };
 
-    const handleDelete = async (restauantId) => {
-        console.log('restauantId', restauantId)
-        const response = await RestaurantAdminService.deleteRestaurant(restauantId);
-        if (response.status === 200) {
-            toast.success("Restaurant Deleted successfully!");
-            fetchData();
-        }
-    }
+//   const displayRestaurants = restaurants.slice(
+//     (page - 1) * restaurantsPerPage,
+//     page * restaurantsPerPage
+//   );
 
+  return (
+    <ThemeProvider theme={theme}>
+      <Box sx={{ backgroundColor: 'background.default', minHeight: '100vh', padding: '2rem' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <Typography variant='h3' sx={{ border: '2px solid', borderColor: 'primary.main', padding: '1rem', borderRadius: '8px', color: 'primary.main' }}>
+            Restaurants Listing
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/add')}
+            color="primary"
+          >
+            Add Restaurant
+          </Button>
+        </Box>
+        <Divider sx={{ marginY: '2rem' }} />
 
-    return (
-        <div>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem' }}>
-                <Box>
-                    <Typography variant='h3' style={{ border: '2px solid blue', padding: '0.5rem' }}>
-                        Restaurants Listing
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+            <CircularProgress color="secondary" />
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {restaurants.map((restaurant) => (
+              <Grid item xs={12} sm={6} md={4} key={restaurant.id}>
+                <Card>
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" sx={{ marginBottom: '0.5rem' }}>
+                      {restaurant.restaurant_name}
                     </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '0.5rem' }}>
+                      {restaurant.description}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '0.5rem' }}>
+                      Contact Number: {restaurant.phone}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Email ID: {restaurant.email}
+                    </Typography>
+                  </CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem', borderTop: '1px solid', borderColor: 'divider' }}>
+                    <IconButton aria-label="edit" onClick={() => handleEdit(restaurant)}>
+                      <EditIcon color="primary" />
+                    </IconButton>
+                    <IconButton aria-label="delete" onClick={() => handleDelete(restaurant.id)}>
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  </Box>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
 
-                </Box>
-                <Box>
-                    <Button onClick={() => navigate(`/add`)} variant="contained" startIcon={<AddIcon />}>
-                        Add Restaurant
-                    </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', padding: '1rem' }}>
+          <Pagination
+            count={Math.ceil(totalCount / restaurantsPerPage)}
+            page={page}
+            onChange={paginate}
+            color="primary"
+          />
+        </Box>
 
-                </Box>
+        <ToastContainer />
+      </Box>
+    </ThemeProvider>
+  );
+};
 
-
-            </Box>
-            <Divider sx={{ marginY: '1rem' }} />
-
-            <Grid container spacing={3}>
-                {loading ?
-                    <Box style={{ display: 'flex', margin: '2rem', justifyContent: 'center', alignItems: 'center' }}>
-                        <Box>
-                            <CircularProgress color="secondary" />
-                        </Box>
-
-                    </Box>
-                    : restaurants?.map((restaurant) => (
-                        <Grid item xs={12} sm={6} md={4} key={restaurant?.id}>
-                            <Card sx={{ height: '100%' }}>
-                                {/* <Box sx={{ height: 'auto' }}>
-                                <CardMedia
-                                    component="img"
-                                    height="140"
-                                    image={restaurant.image_url}
-                                    alt={restaurant.restaurant_name}
-                                />
-                            </Box> */}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <Box sx={{ flexGrow: 1 }}>
-                                        <CardContent sx={{ flexGrow: 1, height: '100%' }}>
-                                            <Typography gutterBottom variant="h5" component="div">
-                                                {restaurant?.restaurant_name}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {restaurant?.description}
-                                            </Typography>
-                                        </CardContent>
-
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Contact Number: {restaurant?.phone}
-                                        </Typography>
-
-                                    </Box>
-                                    <Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Email ID: {restaurant?.email}
-                                        </Typography>
-
-                                    </Box>
-
-                                    <Box >
-                                        <IconButton aria-label="edit"
-                                            onClick={() => handleEdit(
-                                                {
-                                                    name: restaurant.restaurant_name,
-                                                    id: restaurant.id,
-                                                    desc: restaurant.description,
-                                                    phone: restaurant.phone,
-                                                    email: restaurant.email,
-                                                    // image: restaurant.image_url,
-                                                    location: restaurant.location
-                                                })}>
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton aria-label="delete"
-                                            onClick={() => handleDelete(restaurant?.id)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-
-                                    </Box>
-
-                                </Box>
-
-
-
-                            </Card>
-
-                        </Grid>
-                    ))}
-            </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '1rem', padding: '1rem', border: '2px solid black' }}>
-                <Pagination
-                    count={Math.ceil(totalCount / restaurantsPerPage)}
-                    page={page}
-                    onChange={(event, value) => paginate(value)}
-                />
-            </Box>
-            <ToastContainer />
-        </div>
-    )
-}
-
-export default RestaurantList
+export default RestaurantList;
